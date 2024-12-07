@@ -13,7 +13,6 @@
             overflow: hidden;
             height: 100%;
             width: 100%;
-            background: black;
         }
 
         a-scene {
@@ -22,10 +21,6 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-        }
-
-        video {
-            display: none; /* AR.jsが生成する不要な映像を非表示 */
         }
     </style>
 </head>
@@ -38,42 +33,36 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const arScene = document.querySelector("a-scene");
+
             if (arScene) {
                 arScene.addEventListener("loaded", () => {
                     const videoElement = arScene.systems["arjs"].sourceElement;
 
                     if (videoElement && videoElement.tagName === "VIDEO") {
-                        // 明示的に既存のカメラストリームを停止
-                        if (videoElement.srcObject) {
-                            const tracks = videoElement.srcObject.getTracks();
-                            tracks.forEach(track => track.stop());
-                        }
-
-                        // 背面カメラを指定して新しいストリームを取得
+                        // カメラの映像を背面カメラに限定する設定
                         navigator.mediaDevices
                             .getUserMedia({
                                 video: {
-                                    facingMode: { exact: "environment" }, // 背面カメラのみ
-                                    width: { ideal: 1920 },
+                                    facingMode: { exact: "environment" }, // 背面カメラを指定
+                                    width: { ideal: 1920 }, // 解像度の調整（必要に応じて変更）
                                     height: { ideal: 1080 }
                                 }
                             })
                             .then((stream) => {
-                                // 新しいストリームを設定
-                                videoElement.srcObject = stream;
-                                videoElement.style.display = "block";
-                                videoElement.style.position = "absolute";
-                                videoElement.style.top = "0";
-                                videoElement.style.left = "0";
-                                videoElement.style.width = "100%";
-                                videoElement.style.height = "100%";
-                                videoElement.style.objectFit = "cover"; // 映像を画面全体にフィット
-                                videoElement.style.zIndex = "-1"; // 背景に配置
-                                videoElement.play();
+                                videoElement.srcObject = stream; // ストリームを適用
+                                videoElement.play(); // 再生を開始
                             })
                             .catch((err) => {
                                 console.error("カメラの初期化に失敗しました:", err);
                             });
+
+                        // 映像を画面全体に表示
+                        videoElement.style.position = "absolute";
+                        videoElement.style.top = "0";
+                        videoElement.style.left = "0";
+                        videoElement.style.width = "100%";
+                        videoElement.style.height = "100%";
+                        videoElement.style.objectFit = "cover"; // 映像を画面全体にフィット
                     }
                 });
             }
