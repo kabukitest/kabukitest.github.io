@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARカメラ二重防止</title>
+    <title>ARカメラ二重化解消</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
@@ -13,10 +13,6 @@
             overflow: hidden;
             height: 100%;
             width: 100%;
-            display: flex;
-            align-items: center; /* 縦方向中央 */
-            justify-content: center; /* 横方向中央 */
-            background: black; /* カメラ映像以外の部分を黒に */
         }
 
         a-scene {
@@ -28,59 +24,41 @@
         }
 
         video {
-            display: none; /* AR.jsによる内部映像を非表示に */
+            position: absolute;
+            object-fit: contain; /* 縦横比を維持して表示 */
+            width: 100%; /* 幅を画面全体に */
+            height: 100%; /* 高さを画面全体に */
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
+    <!-- A-Frameシーンを作成 -->
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; videoTexture: true;">
-        <!-- カメラ -->
+        <!-- A-Frameのカメラエンティティ -->
         <a-entity camera look-controls></a-entity>
-
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const arScene = document.querySelector("a-scene");
-                if (arScene) {
-                    arScene.addEventListener("loaded", () => {
-                        const sourceElement = arScene.systems["arjs"].sourceElement;
-                        if (sourceElement && sourceElement.tagName === "VIDEO") {
-                            // A-Frameで使用されるビデオを非表示にする
-                            sourceElement.style.display = "none";
-
-                            // カスタムビデオストリームを直接取得し、中央配置する
-                            const videoContainer = document.createElement("video");
-                            videoContainer.setAttribute("autoplay", "");
-                            videoContainer.setAttribute("muted", "");
-                            videoContainer.setAttribute("playsinline", "");
-                            videoContainer.style.position = "relative";
-                            videoContainer.style.objectFit = "contain";
-                            videoContainer.style.width = "auto";
-                            videoContainer.style.height = "100%";
-                            videoContainer.style.maxWidth = "100%";
-                            videoContainer.style.maxHeight = "100%";
-                            document.body.appendChild(videoContainer);
-
-                            // カメラ映像を取得して設定
-                            navigator.mediaDevices
-                                .getUserMedia({
-                                    video: {
-                                        facingMode: "environment", // 背面カメラを使用
-                                        width: { ideal: 1280 },    // 解像度
-                                        height: { ideal: 720 }
-                                    }
-                                })
-                                .then((stream) => {
-                                    videoContainer.srcObject = stream; // ストリームを適用
-                                    videoContainer.play(); // 再生開始
-                                })
-                                .catch((err) => {
-                                    console.error("カメラの初期化に失敗しました:", err);
-                                });
-                        }
-                    });
-                }
-            });
-        </script>
     </a-scene>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const arScene = document.querySelector("a-scene");
+            if (arScene) {
+                arScene.addEventListener("loaded", () => {
+                    const sourceElement = arScene.systems["arjs"].sourceElement;
+
+                    if (sourceElement && sourceElement.tagName === "VIDEO") {
+                        // AR.jsが生成したビデオのスタイルを調整
+                        sourceElement.style.position = "absolute";
+                        sourceElement.style.top = "0";
+                        sourceElement.style.left = "0";
+                        sourceElement.style.width = "100%";
+                        sourceElement.style.height = "100%";
+                        sourceElement.style.objectFit = "contain"; // 縦横比を維持して映像を表示
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
