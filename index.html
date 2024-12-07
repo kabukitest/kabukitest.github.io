@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARカメラ二重化解消</title>
+    <title>ARカメラ調整版</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
@@ -25,7 +25,6 @@
     </style>
 </head>
 <body>
-    <!-- A-Frameシーンを作成 -->
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
         <!-- A-Frameのカメラエンティティ -->
         <a-entity camera></a-entity>
@@ -34,19 +33,36 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const arScene = document.querySelector("a-scene");
+
             if (arScene) {
                 arScene.addEventListener("loaded", () => {
                     const videoElement = arScene.systems["arjs"].sourceElement;
 
                     if (videoElement && videoElement.tagName === "VIDEO") {
-                        // AR.jsが生成したビデオのスタイルを直接適用
+                        // カメラの映像を背面カメラに限定する設定
+                        navigator.mediaDevices
+                            .getUserMedia({
+                                video: {
+                                    facingMode: { exact: "environment" }, // 背面カメラを指定
+                                    width: { ideal: 1920 }, // 解像度の調整（必要に応じて変更）
+                                    height: { ideal: 1080 }
+                                }
+                            })
+                            .then((stream) => {
+                                videoElement.srcObject = stream; // ストリームを適用
+                                videoElement.play(); // 再生を開始
+                            })
+                            .catch((err) => {
+                                console.error("カメラの初期化に失敗しました:", err);
+                            });
+
+                        // 映像を画面全体に表示
                         videoElement.style.position = "absolute";
                         videoElement.style.top = "0";
                         videoElement.style.left = "0";
                         videoElement.style.width = "100%";
                         videoElement.style.height = "100%";
                         videoElement.style.objectFit = "cover"; // 映像を画面全体にフィット
-                        videoElement.style.zIndex = "-1"; // ビデオ要素を背景に移動して二重化を防ぐ
                     }
                 });
             }
