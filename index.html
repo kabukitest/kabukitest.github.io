@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARカメラ中央配置</title>
+    <title>ARカメラ二重防止</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
@@ -14,9 +14,9 @@
             height: 100%;
             width: 100%;
             display: flex;
-            align-items: center; /* 垂直方向で中央揃え */
-            justify-content: center; /* 水平方向で中央揃え */
-            background: black; /* 空白部分を黒く設定 */
+            align-items: center; /* 縦方向中央 */
+            justify-content: center; /* 横方向中央 */
+            background: black; /* カメラ映像以外の部分を黒に */
         }
 
         a-scene {
@@ -28,12 +28,7 @@
         }
 
         video {
-            position: relative;
-            object-fit: contain; /* 縦横比を維持して表示 */
-            width: auto; /* 横幅を自動調整 */
-            height: 100%; /* 高さを画面全体に合わせる */
-            max-width: 100%; /* 横幅が画面を超えないように制限 */
-            max-height: 100%; /* 高さが画面を超えないように制限 */
+            display: none; /* AR.jsによる内部映像を非表示に */
         }
     </style>
 </head>
@@ -49,26 +44,34 @@
                     arScene.addEventListener("loaded", () => {
                         const sourceElement = arScene.systems["arjs"].sourceElement;
                         if (sourceElement && sourceElement.tagName === "VIDEO") {
-                            // カメラ映像のスタイルを調整
-                            sourceElement.style.position = "relative";
-                            sourceElement.style.objectFit = "contain";
-                            sourceElement.style.width = "auto";
-                            sourceElement.style.height = "100%";
-                            sourceElement.style.maxWidth = "100%";
-                            sourceElement.style.maxHeight = "100%";
+                            // A-Frameで使用されるビデオを非表示にする
+                            sourceElement.style.display = "none";
 
-                            // 明示的に解像度を設定
+                            // カスタムビデオストリームを直接取得し、中央配置する
+                            const videoContainer = document.createElement("video");
+                            videoContainer.setAttribute("autoplay", "");
+                            videoContainer.setAttribute("muted", "");
+                            videoContainer.setAttribute("playsinline", "");
+                            videoContainer.style.position = "relative";
+                            videoContainer.style.objectFit = "contain";
+                            videoContainer.style.width = "auto";
+                            videoContainer.style.height = "100%";
+                            videoContainer.style.maxWidth = "100%";
+                            videoContainer.style.maxHeight = "100%";
+                            document.body.appendChild(videoContainer);
+
+                            // カメラ映像を取得して設定
                             navigator.mediaDevices
                                 .getUserMedia({
                                     video: {
-                                        facingMode: "environment", // 背面カメラ
+                                        facingMode: "environment", // 背面カメラを使用
                                         width: { ideal: 1280 },    // 解像度
                                         height: { ideal: 720 }
                                     }
                                 })
                                 .then((stream) => {
-                                    sourceElement.srcObject = stream; // ストリームを適用
-                                    sourceElement.play(); // 再生開始
+                                    videoContainer.srcObject = stream; // ストリームを適用
+                                    videoContainer.play(); // 再生開始
                                 })
                                 .catch((err) => {
                                     console.error("カメラの初期化に失敗しました:", err);
