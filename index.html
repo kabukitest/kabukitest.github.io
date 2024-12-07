@@ -12,10 +12,25 @@
     </style>
 </head>
 <body>
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; videoTexture: true;">
+        <!--
+        `videoTexture: true` を追加。
+        一部のAndroidデバイスでのカメラの拡大や表示の問題を緩和します。
+        -->
+
         <!-- カメラ -->
         <a-entity camera look-controls></a-entity>
+
+        <!-- ワークアラウンド: カメラの初期ズーム調整 -->
+        <script>
+            document.querySelector('a-scene').addEventListener('loaded', () => {
+                const video = document.querySelector('video');
+                if (video) {
+                    // カメラ映像のスタイルを修正
+                    video.style.objectFit = 'contain'; // 映像を画面内に収める
+                }
+            });
+        </script>
     </a-scene>
 </body>
 </html>
-
