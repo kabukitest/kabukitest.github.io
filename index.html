@@ -7,17 +7,32 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; }
-        a-scene { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+
+        a-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
         video {
-            object-fit: fill !important; /* カメラ映像が画面全体に収まるように調整 */
+            object-fit: cover !important; /* 映像を画面全体に拡大して余白を解消 */
             width: 100% !important;
-            height: auto !important;
+            height: 100% !important;
+            position: absolute;
         }
     </style>
 </head>
 <body>
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; videoTexture: true;">
         <!-- カメラ -->
         <a-entity camera look-controls></a-entity>
 
@@ -28,23 +43,26 @@
                     arScene.addEventListener("loaded", () => {
                         const sourceElement = arScene.systems["arjs"].sourceElement;
                         if (sourceElement && sourceElement.tagName === "VIDEO") {
-                            // カメラ映像の表示設定を調整
-                            sourceElement.style.width = "100vw";
-                            sourceElement.style.height = "100vh";
-                            sourceElement.style.objectFit = "cover"; // 映像が画面全体を覆うようにする
+                            // カメラ映像のスタイルを調整
+                            sourceElement.style.width = "100%";
+                            sourceElement.style.height = "100%";
+                            sourceElement.style.objectFit = "cover"; // 余白を削除し画面全体をカバー
+                            sourceElement.style.position = "fixed"; // 映像を固定
+                            sourceElement.style.top = "0";
+                            sourceElement.style.left = "0";
 
-                            // 明示的に解像度を設定
+                            // 明示的に解像度を設定（必要に応じて調整）
                             navigator.mediaDevices
                                 .getUserMedia({
                                     video: {
-                                        facingMode: "environment", // 背面カメラを使用
-                                        width: { ideal: 1920 },    // 高解像度を指定
+                                        facingMode: "environment", // 背面カメラ
+                                        width: { ideal: 1920 },
                                         height: { ideal: 1080 }
                                     }
                                 })
                                 .then((stream) => {
-                                    sourceElement.srcObject = stream; // ストリームをビデオに設定
-                                    sourceElement.play(); // 再生を開始
+                                    sourceElement.srcObject = stream; // ストリームを適用
+                                    sourceElement.play(); // 再生開始
                                 })
                                 .catch((err) => {
                                     console.error("カメラの初期化に失敗しました:", err);
