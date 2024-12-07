@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARカメラ改良版</title>
+    <title>ARカメラ調整版</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
@@ -13,7 +13,6 @@
             overflow: hidden;
             height: 100%;
             width: 100%;
-            background: black; /* 画面外の部分を黒で埋める */
         }
 
         a-scene {
@@ -40,12 +39,12 @@
                     const videoElement = arScene.systems["arjs"].sourceElement;
 
                     if (videoElement && videoElement.tagName === "VIDEO") {
-                        // 背面カメラのストリームを取得
+                        // カメラの映像を背面カメラに限定する設定
                         navigator.mediaDevices
                             .getUserMedia({
                                 video: {
-                                    facingMode: { exact: "environment" }, // 背面カメラを使用
-                                    width: { ideal: 1920 }, // 高解像度を指定
+                                    facingMode: { exact: "environment" }, // 背面カメラを指定
+                                    width: { ideal: 1920 }, // 解像度の調整（必要に応じて変更）
                                     height: { ideal: 1080 }
                                 }
                             })
@@ -57,19 +56,15 @@
                                 console.error("カメラの初期化に失敗しました:", err);
                             });
 
-                        // ビデオ映像のスタイルを設定
+                        // 映像を画面全体に表示
                         videoElement.style.position = "absolute";
                         videoElement.style.top = "0";
                         videoElement.style.left = "0";
                         videoElement.style.width = "100%";
                         videoElement.style.height = "100%";
                         videoElement.style.objectFit = "cover"; // 映像を画面全体にフィット
-                    } else {
-                        console.error("AR.jsのビデオ要素が見つかりません。");
                     }
                 });
-            } else {
-                console.error("A-Frameシーンが正しくロードされていません。");
             }
         });
     </script>
